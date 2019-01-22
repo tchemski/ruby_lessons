@@ -16,23 +16,22 @@ end
 
 sides = ARGV.map{|s| s.to_f}.sort
 
-n = 0
-[sides[0] == sides[1],
- sides[0] == sides[2],
- sides[1] == sides[2]].each{|e| n += 1 if e}
+# так как стороны отсортированы, достаточно смотреть две последовательные пары
+n = [ sides[0] == sides[1],
+      sides[1] == sides[2] ].count{|e| e}
 
 answers = []
 
 if n == 1
   answers.push "равнобедренный"
-elsif n == 3
+elsif n == 2
   answers.push "равносторонний"
 end
 
 if sides[2]**2 == sides[0]**2 + sides[1]**2
   answers.push "прямоугольный"
 else
-  answers.push "не прямоугольный"
+  answers.push "непрямоугольный"
 end
 
 puts "Треугольник #{answers.join(' и ')}."
