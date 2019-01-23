@@ -4,18 +4,7 @@
 #Найти порядковый номер даты, начиная отсчет с начала года.
 #Учесть, что год может быть високосным.
 
-month_days = { 1 => 31,
-               2 => 28,
-               3 => 31,
-               4 => 30,
-               5 => 31,
-               6 => 30,
-               7 => 31,
-               8 => 31,
-               9 => 30,
-              10 => 31,
-              11 => 30,
-              12 => 31 }
+month_days = [ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ]
 
 unless( (day, month, year) = ARGV[0].split(/\D+/).map{|e| e.to_i} ).size == 3
   puts "Пример: day_number.rb 1-2-1980"
@@ -25,14 +14,11 @@ end
 #Год високосный, если он делится на четыре без остатка,
 #но если он делится на 100 без остатка, это не високосный год.
 #Однако, если он делится без остатка на 400, это високосный год.
-def leap_year?(year)
-  return true if(year % 4 == 0)   &&
-                ((year % 400 == 0)||(year % 100 != 0))
-  false
+def is_leap?(year)
+  (year % 4 == 0)&&( (year % 400 == 0)||(year % 100 != 0) )
 end
 
-month_days[2] = 29 if leap_year?(year)
-day_number = day
-(1..month-1).each{ |m| day_number += month_days[m] }
+month_days[1] = 29 if is_leap?(year)
+day_number = month_days.take(month-1).sum + day
 
 puts day_number
