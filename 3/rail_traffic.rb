@@ -101,10 +101,6 @@ class Train
     end
   end
 
-  def route( route )
-    @route
-  end
-
   # Может набирать скорость
   def speed=( speed )
     raise "скорость не может быть меньше нуля speed = #{speed }" unless speed < 0
@@ -141,6 +137,7 @@ class Train
   def route=( route )
     @route = route
     @station = route.begin_station
+    @station.take self
   end
 
   #Имеет номер (произвольная строка)
@@ -223,7 +220,7 @@ end
 # test# test# test# test# test# test# test# test# test# test# test# test# test
 # test# test# test# test# test# test# test# test# test# test# test# test# test
 if $0 == __FILE__
-  station = Station.new('Минск-Центральный')
+  station = Station.new('Минск-Пассажирский')
   station2 = Station.new('Молодечно')
 
   train = Train.new
@@ -284,6 +281,17 @@ if $0 == __FILE__
   station.send train
   p station
 
+  severniy = route.stations[1]
+  route.insert_stations_after(severniy, Station.new('Масюковщина'), Station.new('Лебяжий'),
+                                Station.new('Ждановичи'), Station.new('Минское Море'),
+                                Station.new('Ратомка'), Station.new('Крыжовка'),
+                                Station.new('Зелёное'), Station.new('Беларусь') )
+  train.route = route
 
+  loop do
+    p train.station.name
+    break unless train.next_station
+    train.move_forward
+  end
 
 end
