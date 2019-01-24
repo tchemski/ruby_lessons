@@ -50,22 +50,8 @@ end
 
 class Train
 
-=begin
-
-
-
-
-Может перемещаться между станциями, указанными в маршруте.
-Перемещение возможно вперед и назад, но только на 1 станцию за раз.
-(непонятно как этот метод согласуется со скоростью, мгновенные перемещения?)
-
-Возвращать предыдущую станцию, текущую, следующую, на основе маршрута
-=end
-  #
-
-  #Может возвращать текущую скорость
+  #Может возвращать текущую скорость, станцию, маршрут
   attr_reader :station, :route, :speed
-
 
   PASSANGER = 1
   FREIGHT = 2
@@ -75,6 +61,31 @@ class Train
   def initialize( info = {type: PASSANGER, wagons_umber: 0} )
     @info = info
     @speed = 0
+  end
+
+  # Возвращать предыдущую станцию, текущую, следующую, на основе маршрута
+  # возвращает nil если станция конечная (или лучше бросать исключение?)
+  def next_station
+    stations = @route.stations
+    station_index = stations.index @station
+    stations[station_index + 1]
+  end
+
+  def prev_station
+    stations = @route.stations
+    station_index = stations.index @station
+    station_index == 0 ? nil : stations[station_index - 1]
+  end
+
+  def move_forward
+    next_station ? @station = next_station : raise( "конечная, поезд дальше не идёт" )
+  end
+
+  #Может перемещаться между станциями, указанными в маршруте.
+  #Перемещение возможно вперед и назад, но только на 1 станцию за раз.
+  #(непонятно как этот метод согласуется со скоростью, мгновенные перемещения?)
+  def move_backward
+    prev_station ? @station = prev_station : raise( "конечная, поезд дальше не идёт" )
   end
 
   def route( route )
@@ -203,7 +214,7 @@ if $0 == __FILE__
   station2 = Station.new('Молодечно')
 
   train = Train.new
-  train2 = Train.new(type:Train::PASSANGER, wagons_umber: 5)
+  train2 = Train.new( type: Train::PASSANGER, wagons_umber: 5 )
 
   route = Route.new(station, station2)
 
