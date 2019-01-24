@@ -58,7 +58,7 @@ class Train
 
   #тип (грузовой, пассажирский)
   #количество вагонов, эти данные указываются при создании экземпляра класса
-  def initialize( info = {type: PASSANGER, wagons_umber: 0} )
+  def initialize( info = {type: PASSANGER, wagons_number: 0} )
     @info = info
     @speed = 0
   end
@@ -103,7 +103,7 @@ class Train
 
   # Может набирать скорость
   def speed=( speed )
-    raise "скорость не может быть меньше нуля speed = #{speed }" unless speed < 0
+    raise "скорость не может быть меньше нуля speed = #{speed }" if speed < 0
     # TODO по идее надо ещё максимальную скорость проверить, зависит от типа поезда
     #      и маршрута, но в условии задачи этого нет
     @speed = speed
@@ -126,7 +126,7 @@ class Train
   def unhook_wagon
     #Прицепка/отцепка вагонов может осуществляться только если поезд не движется.
     raise "нельзя отцеплять вагон к от движещегося поезда" if speed > 0
-    raise "нельзя отцепить вагон которого не существует" if @wagons_number == 0
+    raise "нельзя отцепить вагон которого не существует" if @info[:wagons_number] == 0
     @info[:wagons_number] -= 1
   end
 
@@ -293,5 +293,39 @@ if $0 == __FILE__
     break unless train.next_station
     train.move_forward
   end
+  puts
+  loop do
+    p train.station.name
+    break unless train.prev_station
+    train.move_backward
+  end
+
+  10.times{ train.hook_wagon }
+  puts "train:#{train.id} #{train.wagons_number} вагонов"
+  print "Проверка отсоединения вагонов "
+  begin
+      11.times{ train.unhook_wagon }
+  rescue RuntimeError
+      puts " [OK]"
+  end
+
+  puts "train:#{train.id} #{train.wagons_number} вагонов"
+
+  train.speed = 100
+  puts "train:#{train.id} скорость: #{train.speed}"
+
+  begin
+    print "Не даём установить отрицательную скорость "
+    train.speed = -1
+    puts "[ERROR!]"
+  rescue RuntimeError
+    puts "[ОК]"
+  end
+  puts "train:#{train.id} скорость: #{train.speed}"
+  train.stop
+  puts "train:#{train.id} скорость: #{train.speed}"
+
+
+
 
 end
