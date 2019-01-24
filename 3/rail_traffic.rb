@@ -78,14 +78,27 @@ class Train
   end
 
   def move_forward
-    next_station ? @station = next_station : raise( "конечная, поезд дальше не идёт" )
+    #next_station ? @station = next_station : raise( "конечная, поезд дальше не идёт" )
+    if next_station
+      @station.send self #отправили
+      next_station.take self #приняли
+      @station = next_station #записали
+    else
+      raise( "конечная, поезд дальше не идёт" )
+    end
   end
 
   #Может перемещаться между станциями, указанными в маршруте.
   #Перемещение возможно вперед и назад, но только на 1 станцию за раз.
   #(непонятно как этот метод согласуется со скоростью, мгновенные перемещения?)
   def move_backward
-    prev_station ? @station = prev_station : raise( "конечная, поезд дальше не идёт" )
+    if prev_station
+      @station.send self #отправили
+      prev_station.take self
+      @station = prev_station
+    else
+      raise( "конечная, поезд дальше не идёт" )
+    end
   end
 
   def route( route )
@@ -267,4 +280,10 @@ if $0 == __FILE__
   p train
   p train2
   p route
+
+  station.send train
+  p station
+
+
+
 end
