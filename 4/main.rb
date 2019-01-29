@@ -48,7 +48,7 @@ add_route = proc {
     route = Route.new(*selected_stations)
     routes << route
     puts "Создан маршрут #{route}"
-  rescue RuntimeError
+  rescue RuntimeError, ArgumentError
     puts 'Маршрут не создан'
   end
 }
@@ -71,7 +71,7 @@ edit_route = proc {
       begin
         route.insert_stations_after(route.stations[current_id], stations[station_id])
         puts "Станция 'stations[station_id]}' добавлена после route.stations[current_id]"
-      rescue StandardError
+      rescue RuntimeError
         puts 'не удалось добавить станцию'
       end
     }
@@ -164,10 +164,10 @@ unhook_wagons = proc {
 }
 
 route_train = proc {
-  if(train_id = Menu.get_array_id(trains,
-                      'Выберите поезд которому нужно задать маршрут'))&&
-    (route_id = Menu.get_array_id(routes,
-                      "Выберите маршрут для поезда #{trains[train_id]}"))
+  if (train_id = Menu.get_array_id(trains,
+                                   'Выберите поезд которому нужно задать маршрут')) &&
+     (route_id = Menu.get_array_id(routes,
+                                   "Выберите маршрут для поезда #{trains[train_id]}"))
 
     trains[train_id].route = routes[route_id]
   end
@@ -175,7 +175,7 @@ route_train = proc {
 
 drive_train = proc {
   if id = Menu.get_array_id(trains,
-                      'Выберите поезд которым управлять')
+                            'Выберите поезд которым управлять')
     # меню управления поездом
     train = trains[id]
     speed_train = proc {
