@@ -1,9 +1,9 @@
-#!/usr/bin/ruby -w
 require_relative 'auto_array.rb'
+require_relative 'instance_encounter.rb'
 
 class Station
   include AutoArray
-
+  include InstanceCounter
   # Имеет название
   attr_reader :name
 
@@ -14,6 +14,7 @@ class Station
     @name = name
     @trains = []
     auto_array
+    register_instance
   end
 
   # Может принимать поезда (по одному за раз)
@@ -55,22 +56,4 @@ class Station
   def to_s
     name
   end
-end
-
-if $0 == __FILE__
-  Station.new 'Зелёное'
-  stations = Station.all
-  puts stations.class
-  stations << Station.new('Лебяжий') # warning
-
-  puts stations
-
-  require_relative 'passenger_train.rb'
-  require_relative 'train.rb'
-
-  PassengerTrain.new
-
-  stations[0].take_train PassengerTrain.new
-  stations.delete_at(0)
-  puts Station::all
 end

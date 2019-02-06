@@ -9,7 +9,7 @@ class Train
               :route,
               :speed,
               :wagons,
-              :id       # Имеет номер (произвольная строка)
+              :id # Имеет номер (произвольная строка)
 
   def initialize(id_str = '')
     type_name # не даёт создать объект Train, только потомки
@@ -25,7 +25,7 @@ class Train
   end
 
   def self.find(id_str)
-    Train.all.detect {|t| t.id == id_str}
+    Train.all.detect { |t| t.id == id_str }
   end
 
   @@descendants = []
@@ -136,8 +136,9 @@ class Train
   private
 
   def id=(id_str)
-    id_str = id_str.to_s.empty? ? self.object_id.to_s : id_str.to_s
+    id_str = id_str.to_s.empty? ? object_id.to_s : id_str.to_s
     raise 'Поезд с таким номером существует' if self.class.find(id_str)
+
     @id = id_str
   end
 end
