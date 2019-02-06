@@ -10,7 +10,6 @@ module InstanceCounter
   def self.included(base)
     base.send :include, InstanceMethods
     base.send :extend, ClassMethods
-    base.module_exec { self.instances = 0 }
   end
 
   module InstanceMethods
@@ -23,13 +22,13 @@ module InstanceCounter
 
   module ClassMethods
     def instances
-      superclass.include?(InstanceCounter) ? superclass.instances : @instances
+      defined?(@instances) ? @instances : 0
     end
 
     private
 
     def instances=(i)
-      superclass.include?(InstanceCounter) ? superclass.send(:instances=, i) : @instances = i
+      @instances = i
     end
   end
 end
