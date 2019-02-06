@@ -8,27 +8,27 @@
 
 module InstanceCounter
   def self.included(base)
-    base.send :include, InstanceMethods
-    base.send :extend, ClassMethods
+    base.include InstanceMethods
+    base.extend ClassMethods
   end
 
   module InstanceMethods
     private
 
     def register_instance
-      self.class.send :instances=, self.class.instances + 1
+      self.class.send :increase_instances
     end
   end
 
   module ClassMethods
     def instances
-      defined?(@instances) ? @instances : 0
+      @instances ||= 0
     end
 
     private
 
-    def instances=(i)
-      @instances = i
+    def increase_instances
+      @instances = instances + 1
     end
   end
 end

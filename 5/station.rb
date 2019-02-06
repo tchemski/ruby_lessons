@@ -7,8 +7,6 @@ class Station
   # Имеет название
   attr_reader :name
 
-  public
-
   # название указывается при ее создании
   def initialize(name)
     @name = name
