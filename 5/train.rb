@@ -1,9 +1,11 @@
 require_relative 'auto_array.rb'
 require_relative 'stamp.rb'
+require_relative 'instance_counter.rb'
 
 class Train
   include AutoArray
   include Stamp
+  include InstanceCounter
   # Может возвращать текущую скорость, станцию, маршрут, массив вагонов
   attr_reader :station,
               :route,
@@ -18,6 +20,7 @@ class Train
     @route = nil
     self.id = id_str
     auto_array
+    register_instance
   end
 
   def type_name

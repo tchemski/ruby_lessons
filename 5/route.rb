@@ -4,8 +4,7 @@ require_relative 'passenger_train.rb'
 require_relative 'cargo_wagon.rb'
 require_relative 'passenger_wagon.rb'
 require_relative 'auto_array.rb'
-require_relative 'instance_encounter.rb'
-
+require_relative 'instance_counter.rb'
 class Route
   include AutoArray
   include InstanceCounter

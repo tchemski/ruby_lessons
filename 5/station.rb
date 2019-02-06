@@ -1,5 +1,5 @@
 require_relative 'auto_array.rb'
-require_relative 'instance_encounter.rb'
+require_relative 'instance_counter.rb'
 
 class Station
   include AutoArray
