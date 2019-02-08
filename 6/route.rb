@@ -5,9 +5,12 @@ require_relative 'cargo_wagon.rb'
 require_relative 'passenger_wagon.rb'
 require_relative 'auto_array.rb'
 require_relative 'instance_counter.rb'
+require_relative 'validation.rb'
+
 class Route
   include AutoArray
   include InstanceCounter
+  include Validation
 
   # Имеет начальную и конечную станцию, а также список промежуточных станций
   # Может выводить список всех станций по-порядку от начальной до конечной
@@ -17,16 +20,15 @@ class Route
   # промежуточные могут добавляться между ними
   def initialize(begin_station, *stations)
     # начало и конец маршрута
-    @stations = [begin_station]
     end_station = stations.pop || raise('нельзя создать маршрут менее чем из двух станций')
     raise 'такая станция уже есть на маршруте' if begin_station == end_station
-
-    @stations << end_station
+    @stations = [begin_station, end_station]
 
     # остальные станции вставляем между
     insert_stations_after begin_station, *stations
     auto_array
     register_instance
+    validate!
   end
 
   # Может добавлять промежуточную станцию в список
@@ -41,6 +43,7 @@ class Route
 
       @stations.insert(station_index += 1, station)
     end
+    validate!
     stations
   end
 
@@ -54,6 +57,7 @@ class Route
 
       @stations.delete(station) || raise('такой станции не существует на маршруте')
     end
+    validate!
     stations
   end
 
@@ -72,6 +76,18 @@ class Route
   def to_s
     stations.map(&:name).join('->')
   end
+
+  protected
+
+  def validate!
+    stations.each do |s|
+      if !s.is_a? Station
+        raise "в маршрут можно добавить только Station или потомков"
+      end
+    end
+  end
+
+  private
 
   # нельзя редактировать маршрут назначенный поезду
   def freeze

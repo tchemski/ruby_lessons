@@ -29,14 +29,15 @@ class Station
   # Может принимать поезда (по одному за раз)
   def take_train(train)
     raise 'этот поезд уже на станции' if include? train
-
     @trains << train
+    validate!
   end
 
   # Может отправлять поезда
   # (по одному за раз, при этом, поезд удаляется из списка поездов, находящихся на станции).
   def send_train(train)
     @trains.delete(train) || raise('такого поезда на этой станции нет')
+    validate!
   end
 
   def include?(train)

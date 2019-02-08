@@ -8,9 +8,7 @@ class Train
   include AutoArray
   include Stamp
   include InstanceCounter
-  # include Validation нет смысла подключать этот модуль и собирать исключения в одном месте
-  # класс написан так что если он создан и работает - он валидный, все исключения обрабатываются
-  # в main отдельно, не вижу смысла их сливать в один большой метод
+  include Validation
 
   ID_ERROR_MSG =
     'Формат номера поезда: три латинские буквы или цифры в любом порядке, '\
@@ -33,6 +31,7 @@ class Train
     self.id = id_str
     auto_array
     register_instance
+    validate!
   end
 
   def self.type_name
@@ -76,6 +75,7 @@ class Train
     else
       raise('конечная, поезд дальше не идёт')
     end
+    validate!
   end
 
   # Может перемещаться между станциями, указанными в маршруте.
@@ -89,6 +89,7 @@ class Train
     else
       raise('конечная, поезд дальше не идёт')
     end
+    validate!
   end
 
   # Может набирать скорость
@@ -98,11 +99,13 @@ class Train
     # TODO: по идее надо ещё максимальную скорость проверить, зависит от типа поезда
     #      и маршрута, но в условии задачи этого нет
     @speed = speed
+    validate!
   end
 
   # Может тормозить (сбрасывать скорость до нуля)
   def stop
     self.speed = 0
+    validate!
   end
 
   # При назначении маршрута поезду, поезд автоматически помещается на первую станцию в маршруте.
@@ -114,6 +117,7 @@ class Train
     @route = route
     @station = route.begin_station
     @station.take_train self
+    validate!
   end
 
   # Может прицеплять (метод просто увеличивает или уменьшает количество вагонов).
@@ -125,9 +129,8 @@ class Train
     unless wagon.hookable? self.class
       raise "нельзя цеплять #{wagon.class.type_name} к поезду типа '#{self.class.type_name}'"
     end
-
-    # TODO: проверка на максимальную длинну
     wagons << wagon
+    validate!
   end
 
   # отцеплять вагоны (по одному вагону за операцию)
@@ -137,6 +140,7 @@ class Train
     raise 'нельзя отцепить вагон которого не существует' if wagons_number < 1
 
     wagons.pop
+    validate!
   end
 
   # Может возвращать количество вагонов
@@ -148,14 +152,25 @@ class Train
     "#{self.class.type_name} ##{id} lenght:#{wagons_number} speed:#{speed}"
   end
 
+  protected
+
+  def validate!
+    # @id проверяется в самом методе id, остальные изменения объекта валидируются в своих методах.
+    # Я конечно могу все эти валидации собрать здесь, в одном большом методе и вызывать везде validate!
+    # но это замедлит работу программы.
+    # В принципе можно добавить vilidate! в каждый метод изменяющий состояние объекта,
+    # чтоб потомки могли доп проверку добавить например на скорость.
+    # Однако метод validate! и valid? есть, задание выполнено:)
+  end
+
   private
 
   def id=(id_str)
     id_str = id_str.empty? ? generate_id_str : id_str.to_s.upcase
     raise 'Поезд с таким номером существует' if Train.find(id_str)
     raise ID_ERROR_MSG if id_str !~ ID_REGEXP
-
     @id = id_str
+    validate!
   end
 
   def generate_id_str

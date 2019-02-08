@@ -155,4 +155,28 @@ if $0 == __FILE__
   rescue RuntimeError
     puts '[ОК]'
   end
+
+  begin
+    print 'Не даём создать маршрут с одной станцией'
+    Route.new station
+    puts '[ERROR!]'
+  rescue RuntimeError
+    puts '[ОК]'
+  end
+
+  begin
+    print 'Не даём создать маршрут без станций'
+    Route.new
+    puts '[ERROR!]'
+  rescue ArgumentError
+    puts '[ОК]'
+  end
+
+  begin
+    print 'Не даём создать маршрут из всякой фигни'
+    Route.new 'Привет', 'Как дела?'
+    puts '[ERROR!]'
+  rescue RuntimeError
+    puts '[ОК]'
+  end
 end

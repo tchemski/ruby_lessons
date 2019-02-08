@@ -54,7 +54,7 @@ add_route = proc {
     route = Route.new(*selected_stations)
     puts "Создан маршрут #{route}"
   rescue RuntimeError, ArgumentError
-    puts 'Маршрут не создан'
+    puts 'Маршрут не создан. Станций не должно быть меньше двух, станции не должны повторяться.'
   end
 }
 
