@@ -29,6 +29,7 @@ class Station
   # Может принимать поезда (по одному за раз)
   def take_train(train)
     raise 'этот поезд уже на станции' if include? train
+
     @trains << train
     validate!
   end

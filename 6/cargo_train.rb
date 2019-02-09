@@ -2,7 +2,6 @@ require_relative 'train.rb'
 
 # Товарный поезд
 class CargoTrain < Train
-
   MAX_SPEED = 100
 
   def self.type_name

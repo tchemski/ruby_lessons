@@ -22,6 +22,7 @@ class Route
     # начало и конец маршрута
     end_station = stations.pop || raise('нельзя создать маршрут менее чем из двух станций')
     raise 'такая станция уже есть на маршруте' if begin_station == end_station
+
     @stations = [begin_station, end_station]
 
     # остальные станции вставляем между
@@ -62,11 +63,11 @@ class Route
   end
 
   def begin_station
-    @stations[0]
+    @stations.first
   end
 
   def end_station
-    @stations[-1]
+    @stations.last
   end
 
   def include?(station)
@@ -80,10 +81,11 @@ class Route
   protected
 
   def validate!
-    stations.each do |s|
-      if !s.is_a? Station
-        raise "в маршрут можно добавить только Station или потомков"
-      end
+    unless stations.all? { |s| s.is_a? Station }
+      raise 'в маршрут можно добавить только Station или потомков'
+    end
+    if stations.size < 2
+      raise 'маршрут не может состоять менее чем из двух станций'
     end
   end
 

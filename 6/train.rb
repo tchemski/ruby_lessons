@@ -129,6 +129,7 @@ class Train
     unless wagon.hookable? self.class
       raise "нельзя цеплять #{wagon.class.type_name} к поезду типа '#{self.class.type_name}'"
     end
+
     wagons << wagon
     validate!
   end
@@ -152,25 +153,29 @@ class Train
     "#{self.class.type_name} ##{id} lenght:#{wagons_number} speed:#{speed}"
   end
 
+  def id=(id_str)
+    id_str = id_str.empty? ? generate_id_str : id_str.to_s.upcase
+    raise ID_ERROR_MSG unless valid_id?(id_str)
+    raise 'Поезд с таким номером существует' if Train.find(id_str)
+
+    @id = id_str
+    validate!
+  end
+
   protected
 
   def validate!
-    # @id проверяется в самом методе id, остальные изменения объекта валидируются в своих методах.
-    # Я конечно могу все эти валидации собрать здесь, в одном большом методе и вызывать везде validate!
-    # но это замедлит работу программы.
-    # В принципе можно добавить vilidate! в каждый метод изменяющий состояние объекта,
-    # чтоб потомки могли доп проверку добавить например на скорость.
-    # Однако метод validate! и valid? есть, задание выполнено:)
+    raise ID_ERROR_MSG unless valid_id? id
+    raise 'несоответствие типа вагона' if wagons.any? do |w|
+      !w.is_a?(Wagon) ||
+      !w.hookable?(self.class)
+    end
   end
 
   private
 
-  def id=(id_str)
-    id_str = id_str.empty? ? generate_id_str : id_str.to_s.upcase
-    raise 'Поезд с таким номером существует' if Train.find(id_str)
-    raise ID_ERROR_MSG if id_str !~ ID_REGEXP
-    @id = id_str
-    validate!
+  def valid_id?(id_str)
+    id_str =~ ID_REGEXP
   end
 
   def generate_id_str
