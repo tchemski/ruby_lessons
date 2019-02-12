@@ -3,6 +3,8 @@ class Menu
   EXIT = 'Выход'.freeze
   SELECT_ITEM = 'Введите действие'.freeze
   NO_ITEM = 'Такого пункта нет'.freeze
+  NO_CHOICE = 'Нет выбора'.freeze
+  # ONE_CHOICE = 'Единственный возможный выбор сделан'
   DOUBLE_LINE = '=' * 40
   LINE = '-' * 40
   SELECT_NUMBER = 'Выбор номера'.freeze
@@ -16,10 +18,22 @@ class Menu
   end
 
   # Запрашивает у пользователя и возвращает номер элемента массива либо nil
+  # Если массив пустой возвращает nil и сообщает NO_CHOICE
   def self.get_array_id(array, name_menu = SELECT_NUMBER)
     counter = 0
-    Menu.puts_head name_menu
+    Menu.head_puts name_menu
     array.each { |e| puts "#{counter += 1}. #{e}" }
+    if counter.zero?
+      puts LINE
+      puts NO_CHOICE
+      return nil
+      # Если массив с одним элементом возвращает 0 и сообщает ONE_CHOICE
+      # В некоторых случаях приводит к зацикливанию меню
+      # elsif counter == 1
+      #   puts LINE
+      #   puts ONE_CHOICE
+      #   return 0
+    end
     puts "0. #{EXIT}"
     puts LINE
     loop do
@@ -35,7 +49,7 @@ class Menu
     end
   end
 
-  def self.puts_head(head)
+  def self.head_puts(head)
     puts DOUBLE_LINE
     puts head
     puts LINE
@@ -45,7 +59,7 @@ class Menu
   def get_proc
     proc do
       loop do
-        Menu.puts_head @name_menu
+        Menu.head_puts @name_menu
         @items.each { |item, value| puts "#{item}. #{value[0]}" }
         puts LINE
         print "#{SELECT_ITEM}:"

@@ -20,7 +20,6 @@ class Train
   attr_reader :station,
               :route,
               :speed,
-              :wagons,
               :id # Имеет номер (произвольная строка)
 
   def initialize(id_str = '')
@@ -126,7 +125,7 @@ class Train
     raise 'нельзя цеплять вагон к движещемуся поезду' if speed > 0
 
     # проверка на соотвествие типа вагона
-    unless wagon.hookable? self.class
+    unless wagon.class.hookable? self.class
       raise "нельзя цеплять #{wagon.class.type_name} к поезду типа '#{self.class.type_name}'"
     end
 
@@ -149,6 +148,11 @@ class Train
     @wagons.size
   end
 
+  def wagons
+    @wagons.each { |w| yield w } if block_given?
+    @wagons
+  end
+
   def to_s
     "#{self.class.type_name} ##{id} lenght:#{wagons_number} speed:#{speed}"
   end
@@ -168,7 +172,7 @@ class Train
     raise ID_ERROR_MSG unless valid_id? id
     raise 'несоответствие типа вагона' if wagons.any? do |w|
       !w.is_a?(Wagon) ||
-      !w.hookable?(self.class)
+      !w.class.hookable?(self.class)
     end
   end
 

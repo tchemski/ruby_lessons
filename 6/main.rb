@@ -3,11 +3,11 @@
 require_relative 'route.rb'
 require_relative 'menu.rb'
 
-stations = Station.all # массив станций AutoArray::InstanceMethods::Array
+stations = Station.all # массив станций AutoArray
 routes = Route.all
 trains = Train.all
 
-# Подменю станций
+######### Подменю станций ########
 add_station = proc {
   begin
     puts Menu::LINE
@@ -28,7 +28,7 @@ delete_station = proc {
 
 info_station = proc {
   if id = Menu.get_array_id(stations, 'Выбор станции')
-    Menu.puts_head "станция:#{stations[id].name}"
+    Menu.head_puts "станция:#{stations[id].name}"
     puts 'поезда:'
     stations[id].trains.each { |t| puts t }
   end
@@ -41,7 +41,7 @@ stations_menu = Menu.new(
   'Меню станций'
 ).get_proc
 
-# Подменю маршрутов
+######## Подменю маршрутов #########
 add_route = proc {
   selected_stations = []
   while id = Menu.get_array_id(stations,
@@ -105,7 +105,7 @@ edit_route = proc {
 }
 
 show_routes = proc {
-  Menu.puts_head 'Доступные маршруты'
+  Menu.head_puts 'Доступные маршруты'
   routes.each { |r| puts r }
 }
 
@@ -117,7 +117,7 @@ routes_menu = Menu.new(
   'Меню маршрутов'
 ).get_proc
 
-# Подменю поездов
+########## Подменю поездов ##########
 
 add_train = proc {
   type_names = Train.descendants.map(&:type_name)
@@ -148,36 +148,8 @@ delete_train = proc {
 }
 
 info_trains = proc {
-  Menu.puts_head 'Список поездов'
+  Menu.head_puts 'Список поездов'
   trains.each { |t| puts "#{t} #{t.station}" }
-}
-
-hook_wagons = proc {
-  if id = Menu.get_array_id(trains, 'Выберите поезд')
-    train = trains[id]
-    type_names = Wagon.descendants.map(&:type_name)
-    while id = Menu.get_array_id(type_names, 'Какой вагон добавить')
-      wagon = Wagon.descendants[id].new
-      begin
-        train.hook_wagon wagon
-        puts "добавлен вагон #{wagon} в поезд #{train}"
-      rescue RuntimeError
-        puts "невозможно прицепить вагон #{wagon} к поезду #{train}"
-      end
-    end
-  end
-}
-
-unhook_wagons = proc {
-  while id = Menu.get_array_id(trains, 'Выберите поезд у которого отцепить вагон')
-    train = trains[id]
-    begin
-      wagon = train.unhook_wagon
-      puts "вагон #{wagon} отцеплен от поезда #{train}"
-    rescue RuntimeError
-      puts "не получается отцепить вагон от поезда #{train}"
-    end
-  end
 }
 
 route_train = proc {
@@ -246,16 +218,134 @@ trains_menu = Menu.new(
   { 'Добавить поезд' => add_train,
     'Удалить поезд' => delete_train,
     'Информация о поездах' => info_trains,
-    'Прицепить вагоны' => hook_wagons,
-    'Отцепить вагоны' => unhook_wagons,
     'Назначить маршрут' => route_train,
     'Управлять поездом' => drive_train },
   'Меню поездов'
 ).get_proc
 
-# Главное меню
+########## Подменю вагонов ##########
+
+hook_wagons = proc {
+  if id = Menu.get_array_id(trains, 'Выберите поезд')
+    train = trains[id]
+    wagon_types = Wagon.descendants.select { |w| w.hookable? train.class }
+    type_names = wagon_types.map(&:type_name)
+    while id = Menu.get_array_id(type_names, 'Какой вагон прицепить')
+      wagon_type = wagon_types[id]
+      #  TODO где-то просится ещё один класс типа "адаптер", либо proc-объект
+      #  для адаптации меню к типу вагона, однако вводить пользователю каждый раз
+      #  параметры вагона - зло, потому что конструкция вагона конкретна и не
+      #  меняется. Лучше иметь что-то типа "Конструктор вагонов", поэтому пока так:
+      if wagon_type == PassengerWagon
+        Menu.head_puts 'Введите максимальное количество мест в вагоне'
+        print "(по умолчанию #{PassengerWagon::DEFAULT_MAX_SEATS_NUMBER}):"
+        begin
+          wagon = wagon_type.new gets.chomp
+        rescue RuntimeError
+          puts 'Количество мест не может быть таким'
+        end
+      elsif wagon_type == CargoWagon
+        Menu.head_puts 'Введите максимальное объём груза в вагоне, '
+        print "(по умолчанию #{CargoWagon::DEFAULT_MAX_VOLUME})"\
+              ", #{CargoWagon::VOLUME_UNIT_NAME}:"
+        begin
+          wagon = wagon_type.new gets.chomp
+        rescue RuntimeError
+          puts 'Объём не может быть таким'
+        end
+      else
+        wagon = wagon_type.new
+      end
+      begin
+        train.hook_wagon wagon
+        puts "добавлен вагон #{wagon} в поезд #{train}"
+        wagon = nil # сбрасываем вагон, чтоб не добавить его ещё раз
+      rescue RuntimeError
+        puts "невозможно прицепить вагон #{wagon} к поезду #{train}"
+      rescue NoMethodError # undefined method `hookable?'
+        puts 'Вагон не создан и не прицеплен'
+      end
+    end
+  end
+}
+
+unhook_wagons = proc {
+  while id = Menu.get_array_id(trains, 'Выберите поезд у которого отцепить вагон')
+    train = trains[id]
+    begin
+      wagon = train.unhook_wagon
+      puts "вагон #{wagon} отцеплен от поезда #{train}"
+    rescue RuntimeError
+      puts "не получается отцепить вагон от поезда #{train}"
+    end
+  end
+}
+
+wagon_contents = proc {
+  trains_with_wagons = trains.select { |t| t.wagons_number > 0 }
+  while id = Menu.get_array_id(trains_with_wagons, 'Выберите поезд')
+    train = trains_with_wagons[id]
+    while id = Menu.get_array_id(train.wagons, 'Выберите вагон')
+      wagon = train.wagons[id]
+      if wagon.class == PassengerWagon
+        Menu.new(
+          { 'Добавить пассажира' => proc do
+                                      begin
+                                        wagon.take_seat
+                                        puts "Пассажир добавлен в #{wagon}"
+                                      rescue RuntimeError
+                                        puts 'Свободных мест нет'
+                                      end
+                                    end,
+            'Выгнать пассажира' => proc do
+                                     begin
+                                       wagon.release_seat
+                                       puts "Пассажир выгружен из #{wagon}"
+                                     rescue RuntimeError
+                                       puts 'Все места свободны'
+                                     end
+                                   end },
+          'Меню пассажирского вагона'
+        ).get_proc.call
+      elsif wagon.class == CargoWagon
+        Menu.new(
+          { 'Загрузить вагон' => proc do
+                                   Menu.head_puts "Введите объём загрузки вагона #{wagon}"
+                                   print ", #{CargoWagon::VOLUME_UNIT_NAME}:"
+                                   begin
+                                     wagon.load gets.chomp
+                                     puts "Груз загружен в #{wagon}"
+                                   rescue RuntimeError
+                                     puts "Груз не вмещается в #{wagon}"
+                                   end
+                                 end,
+            'Разгрузить вагон' => proc do
+                                    Menu.head_puts "Введите объём выгрузки вагона #{wagon}"
+                                    print "(ENTER выгрузить весь), #{CargoWagon::VOLUME_UNIT_NAME}:"
+                                    begin
+                                      wagon.unload gets.chomp
+                                      puts "Груз выгружен из #{wagon}"
+                                    rescue RuntimeError
+                                      puts "Вагон #{wagon} уже пуст"
+                                    end
+                                  end },
+          'Меню грузового вагона'
+        ).get_proc.call
+      end
+    end
+  end
+}
+wagons_menu = Menu.new(
+  { 'Прицепить вагоны' => hook_wagons,
+    'Отцепить вагоны' => unhook_wagons,
+    'Содержимое вагонов' => wagon_contents },
+  'Меню вагонов'
+).get_proc
+
+########## Главное меню ###########
 Menu.new(
   'Станции' => stations_menu,
   'Маршруты' => routes_menu,
-  'Поезда' => trains_menu
+  'Поезда' => trains_menu,
+  'Вагоны' => wagons_menu
 ).get_proc.call

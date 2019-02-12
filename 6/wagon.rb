@@ -5,7 +5,7 @@ class Wagon
   include Stamp
 
   # Is this wagon hookable to the train?
-  def hookable?(type)
+  def self.hookable?(type)
     types.include? type
   end
 
@@ -34,8 +34,8 @@ class Wagon
 
   protected # метод закрытый, но переопределяется в потомках
 
-  def types
-    raise 'переопределить в потомках, возвращает массив типов поездов к которым ' /
+  def self.types
+    raise 'переопределить в потомках, возвращает массив типов поездов к которым '\
           'можно подключить данный тип вагона'
   end
 end

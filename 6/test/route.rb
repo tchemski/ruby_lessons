@@ -179,4 +179,17 @@ if $0 == __FILE__
   rescue RuntimeError
     puts '[ОК]'
   end
+
+  pass_train = PassengerTrain.new
+  cargo_train = CargoTrain.new
+
+  5.times { pass_train.hook_wagon PassengerWagon.new }
+  5.times { cargo_train.hook_wagon CargoWagon.new }
+
+  pass_train.wagons { |w| 8.times{ w.take_seat }; puts w }
+  cargo_train.wagons  { |w|
+    w.load(rand(w.max_vol*10)/10.0);
+    puts w
+  }
 end
+
