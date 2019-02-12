@@ -185,11 +185,14 @@ if $0 == __FILE__
 
   5.times { pass_train.hook_wagon PassengerWagon.new }
   5.times { cargo_train.hook_wagon CargoWagon.new }
-
-  pass_train.wagons { |w| 8.times{ w.take_seat }; puts w }
-  cargo_train.wagons  { |w|
+###########################################################################
+  puts 'Test Train#each_wagon'
+  pass_train.each_wagon { |w| 8.times{ w.take_seat }; puts w }
+  cargo_train.each_wagon { |w|
     w.load(rand(w.max_vol*10)/10.0);
     puts w
   }
-end
 
+  puts 'Test Station#each_train'
+  station.each_train {|t| puts t}
+end

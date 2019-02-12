@@ -30,7 +30,7 @@ info_station = proc {
   if id = Menu.get_array_id(stations, 'Выбор станции')
     Menu.head_puts "станция:#{stations[id].name}"
     puts 'поезда:'
-    stations[id].trains.each { |t| puts t }
+    stations[id].each_train { |t| puts t }
   end
 }
 
@@ -289,52 +289,57 @@ wagon_contents = proc {
       wagon = train.wagons[id]
       if wagon.class == PassengerWagon
         Menu.new(
-          { 'Добавить пассажира' => proc do
-                                      begin
-                                        wagon.take_seat
-                                        puts "Пассажир добавлен в #{wagon}"
-                                      rescue RuntimeError
-                                        puts 'Свободных мест нет'
-                                      end
-                                    end,
-            'Выгнать пассажира' => proc do
-                                     begin
-                                       wagon.release_seat
-                                       puts "Пассажир выгружен из #{wagon}"
-                                     rescue RuntimeError
-                                       puts 'Все места свободны'
-                                     end
-                                   end },
+          { 'Добавить пассажира' =>
+              proc do
+                begin
+                  wagon.take_seat
+                  puts "Пассажир добавлен в #{wagon}"
+                rescue RuntimeError
+                  puts 'Свободных мест нет'
+                end
+              end,
+            'Выгнать пассажира' =>
+              proc do
+                begin
+                  wagon.release_seat
+                  puts "Пассажир выгружен из #{wagon}"
+                rescue RuntimeError
+                  puts 'Все места свободны'
+                end
+              end },
           'Меню пассажирского вагона'
         ).get_proc.call
       elsif wagon.class == CargoWagon
         Menu.new(
-          { 'Загрузить вагон' => proc do
-                                   Menu.head_puts "Введите объём загрузки вагона #{wagon}"
-                                   print ", #{CargoWagon::VOLUME_UNIT_NAME}:"
-                                   begin
-                                     wagon.load gets.chomp
-                                     puts "Груз загружен в #{wagon}"
-                                   rescue RuntimeError
-                                     puts "Груз не вмещается в #{wagon}"
-                                   end
-                                 end,
-            'Разгрузить вагон' => proc do
-                                    Menu.head_puts "Введите объём выгрузки вагона #{wagon}"
-                                    print "(ENTER выгрузить весь), #{CargoWagon::VOLUME_UNIT_NAME}:"
-                                    begin
-                                      wagon.unload gets.chomp
-                                      puts "Груз выгружен из #{wagon}"
-                                    rescue RuntimeError
-                                      puts "Вагон #{wagon} уже пуст"
-                                    end
-                                  end },
+          { 'Загрузить вагон' =>
+              proc do
+                Menu.head_puts "Введите объём загрузки вагона #{wagon}"
+                print ", #{CargoWagon::VOLUME_UNIT_NAME}:"
+                begin
+                  wagon.load gets.chomp
+                  puts "Груз загружен в #{wagon}"
+                rescue RuntimeError
+                  puts "Груз не вмещается в #{wagon}"
+                end
+              end,
+            'Разгрузить вагон' =>
+              proc do
+                Menu.head_puts "Введите объём выгрузки вагона #{wagon}"
+                print "(ENTER выгрузить весь), #{CargoWagon::VOLUME_UNIT_NAME}:"
+                begin
+                  wagon.unload gets.chomp
+                  puts "Груз выгружен из #{wagon}"
+                rescue RuntimeError
+                  puts "Вагон #{wagon} уже пуст"
+                end
+              end },
           'Меню грузового вагона'
         ).get_proc.call
       end
     end
   end
 }
+
 wagons_menu = Menu.new(
   { 'Прицепить вагоны' => hook_wagons,
     'Отцепить вагоны' => unhook_wagons,

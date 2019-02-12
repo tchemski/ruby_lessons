@@ -148,9 +148,10 @@ class Train
     @wagons.size
   end
 
-  def wagons
-    @wagons.each { |w| yield w } if block_given?
-    @wagons
+  attr_reader :wagons
+
+  def each_wagon
+    @wagons.each { |w| yield w }
   end
 
   def to_s

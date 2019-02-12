@@ -55,6 +55,10 @@ class Station
     end
   end
 
+  def each_train
+    trains.each { |t| yield t }
+  end
+
   # кол-во грузовых, пассажирских
   def trains_number(type = nil)
     if !type
