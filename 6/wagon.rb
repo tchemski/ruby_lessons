@@ -1,7 +1,9 @@
 require_relative 'stamp.rb'
+require_relative 'descendants.rb'
 
 # вагон
 class Wagon
+  extend Descendants
   include Stamp
 
   # Is this wagon hookable to the train?
@@ -9,14 +11,9 @@ class Wagon
     types.include? type
   end
 
-  @@descendants = []
-
-  def self.inherited(subclass)
-    @@descendants << subclass
-  end
-
-  def self.descendants
-    @@descendants
+  def self.types
+    raise 'переопределить в потомках, возвращает массив типов поездов к'\
+          ' которым можно подключить данный тип вагона'
   end
 
   # Пусть будет номер у каждого вагона, для порядка
@@ -25,17 +22,10 @@ class Wagon
   end
 
   def self.type_name
-    raise 'переопределить в потомках, возвращает строку типа вагона, для информации'
+    raise 'переопределить в потомках, возвращает название типа вагона'
   end
 
   def to_s
     "#{self.class.type_name} ##{id}"
-  end
-
-  protected # метод закрытый, но переопределяется в потомках
-
-  def self.types
-    raise 'переопределить в потомках, возвращает массив типов поездов к которым '\
-          'можно подключить данный тип вагона'
   end
 end

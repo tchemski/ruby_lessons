@@ -11,9 +11,9 @@ class Test
   end
 end
 
-class Test2 < Test;  end
+class Test2 < Test; end
 
-10.times{Test.new}
-5.times{Test2.new}
+10.times { Test.new }
+5.times { Test2.new }
 puts Test.instances
 puts Test2.instances

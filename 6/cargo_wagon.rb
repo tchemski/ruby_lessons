@@ -5,7 +5,7 @@ class CargoWagon < Wagon
   VOLUME_UNIT_NAME = 'м³'.freeze
   DEFAULT_MAX_VOLUME = 75.0
 
-  attr_reader :free_vol, # метод, который возвращает оставшийся (доступный) объем
+  attr_reader :free_vol, # возвращает оставшийся (доступный) объем
               :max_vol   # атрибут общего объема (задается при создании вагона)
 
   def self.types
@@ -25,25 +25,25 @@ class CargoWagon < Wagon
   end
 
   # метод, которые "занимает объем" в вагоне (объем в качестве параметра)
-  def load(v)
-    v = v.to_f
-    raise 'нет свободного объёма' if v > free_vol
+  def load(vol)
+    vol = vol.to_f
+    raise 'нет свободного объёма' if vol > free_vol
 
-    validate_v! v
-    @free_vol -= v
+    validate_v! vol
+    @free_vol -= vol
   end
 
-  def unload(v = '')
-    v = v.to_f
+  def unload(vol = '')
+    vol = vol.to_f
     raise 'вагон пуст' if empty?
 
-    validate_v! v
-    if v >= filled_vol # опустошаем всё
+    validate_v! vol
+    if vol >= filled_vol # опустошаем всё
       unloading_vol = filled_vol
       @free_vol = @max_vol
       return unloading_vol # сколько было
     else
-      @free_vol += v
+      @free_vol += vol
     end
   end
 
@@ -67,7 +67,7 @@ class CargoWagon < Wagon
 
   protected
 
-  def validate_v!(v)
-    raise 'объем должен быть положительным числом' if v < 0
+  def validate_v!(vol)
+    raise 'объем должен быть положительным числом' if vol < 0
   end
 end

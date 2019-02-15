@@ -14,7 +14,8 @@ module AutoArray
   end
 
   module ClassMethods
-    # В классе создать метод класса all который возвращает все станции (объекты), созданные на данный момент
+    # В классе создать метод класса all который возвращает все станции
+    # (объекты), созданные на данный момент
     def all
       superclass.include?(AutoArray) ? superclass.all : @all
     end

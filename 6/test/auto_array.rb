@@ -3,7 +3,7 @@
 require_relative '../auto_array.rb'
 
 # test # test # test # test # test # test # test # test # test # test # test
-if $0 == __FILE__
+if $PROGRAM_NAME == __FILE__
   class Test
     include AutoArray
 
@@ -31,7 +31,6 @@ if $0 == __FILE__
       self.class.all
     end
   end
-
 
   TestTest.new
   TestTestTest.new

@@ -14,15 +14,15 @@ puts "pw.hookable? Train => #{pw.hookable? Train}"
 puts "Тип вагона: #{pw.class.type_name}, id: #{pw.id}"
 p pw
 begin
-print 'пробуем вызвать protected'
-pw.types
-puts ' [ERROR!]'
+  print 'пробуем вызвать protected'
+  pw.types
+  puts ' [ERROR!]'
 rescue NoMethodError
-puts ' [ОК]'
+  puts ' [ОК]'
 end
 
 puts pw.manufacturer
 pw.manufacturer = 'Simens'
 puts pw.manufacturer
 
-p Wagon.descendants.map { |t| t.type_name }
+p Wagon.descendants.map(&:type_name)

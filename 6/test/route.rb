@@ -4,12 +4,11 @@ require_relative '../route.rb'
 
 # test# test# test# test# test# test# test# test# test# test# test# test# test
 # test# test# test# test# test# test# test# test# test# test# test# test# test
-if $0 == __FILE__
+if $PROGRAM_NAME == __FILE__
   station = Station.new('Минск-Пассажирский')
   station2 = Station.new('Молодечно')
 
   train = PassengerTrain.new
-  train2 = PassengerTrain.new
 
   route = Route.new(station, station2)
 
@@ -58,23 +57,20 @@ if $0 == __FILE__
   puts "    station.name:#{station.name}"
   puts "    route.stations:#{route.stations}"
   puts "    train.id:#{train.id}"
-  p station
-  p train
-  p train2
-  p route
 
   station.send_train train
-  p station
 
   severniy = route.stations[1]
-  route.insert_stations_after(severniy, Station.new('Масюковщина'), Station.new('Лебяжий'),
-                              Station.new('Ждановичи'), Station.new('Минское Море'),
-                              Station.new('Ратомка'), Station.new('Крыжовка'),
-                              Station.new('Зелёное'), Station.new('Беларусь'))
+  route.insert_stations_after(
+    severniy, Station.new('Масюковщина'), Station.new('Лебяжий'),
+    Station.new('Ждановичи'), Station.new('Минское Море'),
+    Station.new('Ратомка'), Station.new('Крыжовка'),
+    Station.new('Зелёное'), Station.new('Беларусь')
+  )
   train.route = route
 
   loop do
-    p train.station.name
+    puts station
     break unless train.next_station
 
     train.move_forward
@@ -84,7 +80,7 @@ if $0 == __FILE__
   puts 'Удалили станцию'
 
   loop do
-    p train.station.name
+    puts station
     break unless train.prev_station
 
     train.move_backward
@@ -126,21 +122,17 @@ if $0 == __FILE__
   puts 'добавим разных поездов на станцию'
   station.take_train PassengerTrain.new('23143')
   station.take_train PassengerTrain.new('asd-12')
-  station.take_train PassengerTrain.new()
-  station.take_train PassengerTrain.new()
-  station.take_train CargoTrain.new()
-  station.take_train CargoTrain.new()
-  station.take_train CargoTrain.new()
+  station.take_train PassengerTrain.new
+  station.take_train PassengerTrain.new
+  station.take_train CargoTrain.new
+  station.take_train CargoTrain.new
+  station.take_train CargoTrain.new
   puts '====Пассажирские поезда===='
   station.trains(PassengerTrain).each { |t| puts t }
   puts '====Товарные поезда===='
   station.trains(CargoTrain).each { |t| puts t }
   puts '====Все поезда===='
   station.trains.each { |t| puts t }
-
-  p train
-  p Train.descendants
-  p Wagon.descendants
 
   puts Train.all
 
@@ -185,14 +177,17 @@ if $0 == __FILE__
 
   5.times { pass_train.hook_wagon PassengerWagon.new }
   5.times { cargo_train.hook_wagon CargoWagon.new }
-###########################################################################
-  puts 'Test Train#each_wagon'
-  pass_train.each_wagon { |w| 8.times{ w.take_seat }; puts w }
-  cargo_train.each_wagon { |w|
-    w.load(rand(w.max_vol*10)/10.0);
+  ###########################################################################
+  puts 'Test Train#wagons.each'
+  pass_train.wagons.each do |w|
+    8.times { w.take_seat }
     puts w
-  }
+  end
+  cargo_train.wagons.each do |w|
+    w.load(rand(w.max_vol * 10) / 10.0)
+    puts w
+  end
 
-  puts 'Test Station#each_train'
-  station.each_train {|t| puts t}
+  puts 'Test Station#trains.each_train'
+  station.trains.each { |t| puts t }
 end

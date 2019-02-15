@@ -2,7 +2,7 @@
 
 require_relative '../station.rb'
 
-if $0 == __FILE__
+if $PROGRAM_NAME == __FILE__
   Station.new 'Зелёное'
   stations = Station.all
   puts stations.class
@@ -17,5 +17,5 @@ if $0 == __FILE__
 
   stations[0].take_train PassengerTrain.new
   stations.delete_at(0)
-  puts Station::all
+  puts Station.all
 end

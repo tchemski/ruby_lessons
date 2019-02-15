@@ -1,58 +1,67 @@
 class Menu
   MAIN_MENU = 'Главное меню'.freeze
   EXIT = 'Выход'.freeze
-  SELECT_ITEM = 'Введите действие'.freeze
+  SELECT_ITEM = 'Выберите пункт'.freeze
   NO_ITEM = 'Такого пункта нет'.freeze
   NO_CHOICE = 'Нет выбора'.freeze
-  # ONE_CHOICE = 'Единственный возможный выбор сделан'
   DOUBLE_LINE = '=' * 40
   LINE = '-' * 40
-  SELECT_NUMBER = 'Выбор номера'.freeze
+
+  # Запрашивает у пользователя и возвращает номер элемента массива либо nil
+  # Если массив пустой возвращает nil и сообщает NO_CHOICE
+  class << self
+    def numeric_list_puts(array)
+      # вывод пронумерованного списка
+      counter = 0
+      array.each do |e|
+        counter += 1
+        puts "#{counter}. #{e}"
+      end
+      counter
+    end
+
+    def user_gets
+      print "#{SELECT_ITEM}:"
+      gets.to_i
+    end
+
+    def array_id(array, name_menu = SELECT_NUMBER)
+      # заголовок
+      Menu.head_puts name_menu
+
+      if Menu.numeric_list_puts(array).zero?
+        puts LINE, NO_CHOICE
+        return nil
+      end
+      puts "0. #{EXIT}", LINE
+
+      # запрос ввода у пользователя, если такого пункта нет, запрашивает ещё.
+      # ENTER либо 0 прерывает запрос
+      loop do
+        number = Menu.user_gets
+        return number - 1 if (1..array.size).cover?(number)
+        return nil if number.zero?
+
+        puts "#{NO_ITEM}."
+      end
+    end
+
+    # Печать заголовка меню
+    def head_puts(head)
+      puts DOUBLE_LINE, head, LINE
+    end
+  end
 
   def initialize(items = {}, name_menu = MAIN_MENU)
     @name_menu = name_menu
     @items = {}
     counter = 0
-    items.each { |item_name, action| @items[counter += 1] = [item_name, action] }
+
+    items.each do |item_name, action|
+      counter += 1
+      @items[counter] = [item_name, action]
+    end
     @items.merge!(0 => [EXIT, nil])
-  end
-
-  # Запрашивает у пользователя и возвращает номер элемента массива либо nil
-  # Если массив пустой возвращает nil и сообщает NO_CHOICE
-  def self.get_array_id(array, name_menu = SELECT_NUMBER)
-    counter = 0
-    Menu.head_puts name_menu
-    array.each { |e| puts "#{counter += 1}. #{e}" }
-    if counter.zero?
-      puts LINE
-      puts NO_CHOICE
-      return nil
-      # Если массив с одним элементом возвращает 0 и сообщает ONE_CHOICE
-      # В некоторых случаях приводит к зацикливанию меню
-      # elsif counter == 1
-      #   puts LINE
-      #   puts ONE_CHOICE
-      #   return 0
-    end
-    puts "0. #{EXIT}"
-    puts LINE
-    loop do
-      print "#{SELECT_ITEM}:"
-      number = gets.to_i
-      if (1..array.size).cover?(number)
-        return number - 1
-      elsif number == 0
-        return nil
-      else
-        puts "#{NO_ITEM}."
-      end
-    end
-  end
-
-  def self.head_puts(head)
-    puts DOUBLE_LINE
-    puts head
-    puts LINE
   end
 
   # возвращает proc объект для отрисовки меню и запроса у пользователя
@@ -62,9 +71,8 @@ class Menu
         Menu.head_puts @name_menu
         @items.each { |item, value| puts "#{item}. #{value[0]}" }
         puts LINE
-        print "#{SELECT_ITEM}:"
-        item = gets.to_i
-        break if item == 0
+        item = Menu.user_gets
+        break if item.zero?
         next unless @items[item]
 
         @items[item][1].call

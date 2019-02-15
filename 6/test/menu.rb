@@ -2,9 +2,8 @@
 
 require_relative '../menu.rb'
 
-
 # test # test # test # test # test # test # test # test # test # test # test
-if $0 == __FILE__
+if $PROGRAM_NAME == __FILE__
   sub_menu = Menu.new(
     { 'item1' => proc { puts 'item1 selected' },
       'item2' => proc { puts 'item2 selected' } },

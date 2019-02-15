@@ -21,17 +21,17 @@ add_station = proc {
 }
 
 delete_station = proc {
-  if id = Menu.get_array_id(stations, 'Выбор станции для удаления')
-    stations.delete_at(id)
-  end
+  (id = Menu.array_id(stations, 'Выбор станции для удаления')) || next
+
+  stations.delete_at(id)
 }
 
 info_station = proc {
-  if id = Menu.get_array_id(stations, 'Выбор станции')
-    Menu.head_puts "станция:#{stations[id].name}"
-    puts 'поезда:'
-    stations[id].each_train { |t| puts t }
-  end
+  (id = Menu.array_id(stations, 'Выбор станции')) || next
+
+  Menu.head_puts "станция:#{stations[id].name}"
+  puts 'поезда:'
+  stations[id].trains.each { |t| puts t }
 }
 
 stations_menu = Menu.new(
@@ -44,9 +44,12 @@ stations_menu = Menu.new(
 ######## Подменю маршрутов #########
 add_route = proc {
   selected_stations = []
-  while id = Menu.get_array_id(stations,
-                               "Добавление станции к маршруту\n" \
-                               "#{selected_stations.join('->')}")
+  loop do
+    id = Menu.array_id(
+      stations,
+      "Добавление станции к маршруту\n#{selected_stations.join('->')}"
+    ) || break
+
     puts Menu::LINE
     selected_stations << stations[id]
   end
@@ -54,55 +57,60 @@ add_route = proc {
     route = Route.new(*selected_stations)
     puts "Создан маршрут #{route}"
   rescue RuntimeError, ArgumentError
-    puts 'Маршрут не создан. Станций не должно быть меньше двух, станции не должны повторяться.'
+    puts 'Маршрут не создан. Станций не должно быть меньше двух, станции не '\
+         'должны повторяться.'
   end
 }
 
 delete_route = proc {
-  if id = Menu.get_array_id(routes, 'Выбор маршрута для удаления')
-    routes.delete_at(id)
-  end
+  id = Menu.array_id(routes, 'Выбор маршрута для удаления') || next
+  routes.delete_at(id)
 }
 
-edit_route = proc {
-  if id = Menu.get_array_id(routes, 'Выбор маршрута для редактирования')
-    route = routes[id]
-    # подменю редактирования маршрута
-    add_station_route = proc {
-      station_id = Menu.get_array_id(stations,
-                                     'Какую станцию добавить в маршрут')
-      current_id = Menu.get_array_id(route.stations[0..-2],
-                                     'После какой станции вставить')
+# подменю редактирования маршрута
+class Route
+  def add_station_menu_proc
+    proc do
+      station_id =
+        Menu.array_id(stations, 'Какую станцию добавить в маршрут')
+
+      current_id =
+        Menu.array_id(stations[0..-2], 'После какой станции вставить')
+
       begin
-        route.insert_stations_after(route.stations[current_id], stations[station_id])
-        puts "Станция '#{stations[station_id]}}' добавлена после #{route.stations[current_id]}"
+        insert_stations_after(stations[current_id], stations[station_id])
+        puts "Станция '#{stations[station_id]}}' добавлена после "\
+             "#{stations[current_id]}"
       rescue FrozenError
         puts 'нельзя редактировать маршрут добавленный к поезду'
       rescue RuntimeError
         puts 'не удалось добавить станцию'
       end
-    }
+    end
+  end
 
-    delete_station_route = proc {
+  def delete_station_menu_proc
+    proc do
       begin
-        routes[id].delete_stations(
-          routes[id].stations[
-            Menu.get_array_id(routes[id].stations,
-                              'Выбор станции для удаления из маршрута')
-          ]
-        )
+        station_id =
+          Menu.array_id(tations, 'Выбор станции для удаления из маршрута')
+        delete_stations(stations[station_id])
       rescue RuntimeError, TypeError
         puts 'невозможно удалить эту станцию'
       end
-    }
-
-    Menu.new(
-      { 'Добавление станции' => add_station_route,
-        'Удаление станции' => delete_station_route },
-      "Редактирование маршрута #{routes[id]}"
-    ).get_proc.call
+    end
   end
-}
+end
+
+edit_route = proc do
+  id = Menu.array_id(routes, 'Выбор маршрута для редактирования') || next
+  route = routes[id]
+  Menu.new(
+    { 'Добавление станции' => route.add_station_menu_proc,
+      'Удаление станции' => route.delete_station_menu_proc },
+    "Редактирование маршрута #{routes[id]}"
+  ).get_proc.call
+end
 
 show_routes = proc {
   Menu.head_puts 'Доступные маршруты'
@@ -118,18 +126,20 @@ routes_menu = Menu.new(
 ).get_proc
 
 ########## Подменю поездов ##########
-
 add_train = proc {
   type_names = Train.descendants.map(&:type_name)
-  while id = Menu.get_array_id(type_names,
-                               'Тип поезда')
+  loop do
+    id = Menu.array_id(type_names, 'Тип поезда') || break
+
     begin
       puts Menu::LINE
       print 'Введите номер поезда, либо ENTER для генерации случайного номера:'
       train = Train.descendants[id].new(gets.chomp)
       puts "добавлен поезд #{train}"
     rescue RuntimeError
-      if Train.find(id) # TODO: по хорошему не хватает подклассов ошибок чтоб разделять эти события
+      # TODO: по хорошему не хватает подклассов ошибок чтоб разделять эти
+      #       события
+      if Train.find(id)
         puts 'Поезд с таким номером существует'
       else
         puts 'Неправильный формат номера поезда'
@@ -140,8 +150,9 @@ add_train = proc {
 }
 
 delete_train = proc {
-  while id = Menu.get_array_id(trains,
-                               'Какой поезд удалить')
+  loop do
+    id = Menu.array_id(trains, 'Какой поезд удалить') || next
+
     train = trains.delete_at(id)
     puts "удалён поезд #{train}"
   end
@@ -153,65 +164,84 @@ info_trains = proc {
 }
 
 route_train = proc {
-  if (train_id = Menu.get_array_id(trains,
-                                   'Выберите поезд которому нужно задать маршрут')) &&
-     (route_id = Menu.get_array_id(routes,
-                                   "Выберите маршрут для поезда #{trains[train_id]}"))
+  train_id = Menu.array_id(
+    trains,
+    'Выберите поезд которому нужно задать маршрут'
+  ) || next
 
-    trains[train_id].route = routes[route_id]
-  end
+  route_id = Menu.array_id(
+    routes,
+    "Выберите маршрут для поезда #{trains[train_id]}"
+  ) || next
+
+  trains[train_id].route = routes[route_id]
 }
 
-drive_train = proc {
-  if id = Menu.get_array_id(trains,
-                            'Выберите поезд которым управлять')
-    # меню управления поездом
-    train = trains[id]
-    if trains[id].route
-      speed_train = proc {
-        print 'введите скорость:'
-        begin
-          train.speed = gets.to_i
-          puts "поезд #{train}"
-        rescue RuntimeError
-          puts 'не удаётся установить такую скорость'
-        end
-      }
-      stop_train = proc {
-        train.stop
-        puts "поезд #{train}"
-      }
-      forward_train = proc {
-        begin
-          train.move_forward
-          puts "поезд #{train} #{train.station}"
-        rescue RuntimeError
-          puts 'не удаётся двигаться по такому маршруту'
-        rescue NoMethodError
-          puts 'вначале задайте маршрут поезду'
-        end
-      }
-      backward_train = proc {
-        begin
-          train.move_backward
-          puts "поезд #{train} #{train.station}"
-        rescue RuntimeError
-          puts 'не удаётся двигаться по такому маршруту'
-        rescue NoMethodError
-          puts 'вначале задайте маршрут поезду'
-        end
-      }
-      Menu.new(
-        { 'Установить скорость' => speed_train,
-          'Остановиться' => stop_train,
-          'Переместиться вперёд' => forward_train,
-          'Переместиться назад' => backward_train },
-        "Управление #{train.class.type_name} поездом ##{train.id}"
-      ).get_proc.call
-    else # trains[id].route
-      puts 'нельзя управлять поездом у которого нет маршрута'
+class Train
+  def speed_menu_proc
+    proc {
+      print 'введите скорость:'
+      begin
+        self.speed = gets.to_i
+        puts "поезд #{self}"
+      rescue RuntimeError
+        puts 'не удаётся установить такую скорость'
+      end
+    }
+  end
+
+  def stop_menu_proc
+    proc {
+      stop
+      puts "поезд #{self}"
+    }
+  end
+
+  def forward_menu_proc
+    proc do
+      begin
+        move_forward
+        puts "поезд #{self} #{station}"
+      rescue RuntimeError
+        puts 'не удаётся двигаться по такому маршруту'
+      rescue NoMethodError
+        puts 'вначале задайте маршрут поезду'
+      end
     end
   end
+
+  def backward_menu_proc
+    proc do
+      begin
+        move_backward
+        puts "поезд #{self} #{station}"
+      rescue RuntimeError
+        puts 'не удаётся двигаться по такому маршруту'
+      rescue NoMethodError
+        puts 'вначале задайте маршрут поезду'
+      end
+    end
+  end
+end
+
+drive_train = proc {
+  id = Menu.array_id(trains, 'Выберите поезд которым управлять') || next
+
+  train = trains[id]
+
+  unless train.route
+    puts 'нельзя управлять поездом у которого нет маршрута'
+    next
+  end
+
+  # меню управления поездом
+  Menu.new(
+    { 'Установить скорость' => train.speed_menu_proc,
+      'Остановиться' => train.stop_menu_proc,
+      'Переместиться вперёд' => train.forward_menu_proc,
+      'Переместиться назад' => train.backward_menu_proc },
+    "Управление #{train.class.type_name} поездом ##{train.id}"
+  ).get_proc.call
 }
 
 trains_menu = Menu.new(
@@ -224,53 +254,72 @@ trains_menu = Menu.new(
 ).get_proc
 
 ########## Подменю вагонов ##########
+class Wagon
+  # фабрика вагонов
+  def self.concrete_menu(train)
+    # уточняем тип вагона
+    wagon_types = Wagon.descendants.select { |w| w.hookable?(train.class) }
+    type_names = wagon_types.map(&:type_name)
+    id = Menu.array_id(type_names, 'Какой вагон прицепить') || (return nil)
+    begin
+      # немножко полиморфизма на уровне классов
+      wagon_types[id].concrete_menu
+    rescue StandardError
+      raise # ещё наверх
+    end
+  end
+end
+
+class PassengerWagon
+  def self.concrete_menu
+    # уточняем параметры вагона
+    Menu.head_puts 'Введите максимальное количество мест в вагоне'
+    print "(по умолчанию #{DEFAULT_MAX_SEATS_NUMBER}):"
+    begin
+      new(gets.chomp)
+    rescue RuntimeError
+      puts 'Количество мест не может быть таким'
+    rescue StandardError
+    end
+  end
+end
+
+class CargoWagon
+  def self.concrete_menu
+    Menu.head_puts 'Введите максимальное объём груза в вагоне, '
+    print "(по умолчанию #{DEFAULT_MAX_VOLUME})"\
+          ", #{VOLUME_UNIT_NAME}:"
+    begin
+      new(gets.chomp)
+    rescue RuntimeError
+      puts 'Объём не может быть таким'
+      raise # выбрасываем ошибку наверх
+    end
+  end
+end
 
 hook_wagons = proc {
-  if id = Menu.get_array_id(trains, 'Выберите поезд')
-    train = trains[id]
-    wagon_types = Wagon.descendants.select { |w| w.hookable? train.class }
-    type_names = wagon_types.map(&:type_name)
-    while id = Menu.get_array_id(type_names, 'Какой вагон прицепить')
-      wagon_type = wagon_types[id]
-      #  TODO где-то просится ещё один класс типа "адаптер", либо proc-объект
-      #  для адаптации меню к типу вагона, однако вводить пользователю каждый раз
-      #  параметры вагона - зло, потому что конструкция вагона конкретна и не
-      #  меняется. Лучше иметь что-то типа "Конструктор вагонов", поэтому пока так:
-      if wagon_type == PassengerWagon
-        Menu.head_puts 'Введите максимальное количество мест в вагоне'
-        print "(по умолчанию #{PassengerWagon::DEFAULT_MAX_SEATS_NUMBER}):"
-        begin
-          wagon = wagon_type.new gets.chomp
-        rescue RuntimeError
-          puts 'Количество мест не может быть таким'
-        end
-      elsif wagon_type == CargoWagon
-        Menu.head_puts 'Введите максимальное объём груза в вагоне, '
-        print "(по умолчанию #{CargoWagon::DEFAULT_MAX_VOLUME})"\
-              ", #{CargoWagon::VOLUME_UNIT_NAME}:"
-        begin
-          wagon = wagon_type.new gets.chomp
-        rescue RuntimeError
-          puts 'Объём не может быть таким'
-        end
-      else
-        wagon = wagon_type.new
-      end
-      begin
-        train.hook_wagon wagon
-        puts "добавлен вагон #{wagon} в поезд #{train}"
-        wagon = nil # сбрасываем вагон, чтоб не добавить его ещё раз
-      rescue RuntimeError
-        puts "невозможно прицепить вагон #{wagon} к поезду #{train}"
-      rescue NoMethodError # undefined method `hookable?'
-        puts 'Вагон не создан и не прицеплен'
-      end
+  id = Menu.array_id(trains, 'Выберите поезд') || next
+  train = trains[id]
+  loop do
+    begin
+      wagon = Wagon.concrete_menu(train) || break
+      train.hook_wagon wagon
+      puts "добавлен вагон #{wagon} в поезд #{train}"
+      wagon = nil # сбрасываем вагон, чтоб не добавить его ещё раз
+    rescue RuntimeError
+      puts "невозможно прицепить вагон #{wagon} к поезду #{train}"
+    rescue NoMethodError # undefined method `hookable?'
+      puts 'Вагон не создан и не прицеплен'
     end
   end
 }
 
 unhook_wagons = proc {
-  while id = Menu.get_array_id(trains, 'Выберите поезд у которого отцепить вагон')
+  loop do
+    id = Menu.array_id(trains,
+                       'Выберите поезд у которого отцепить вагон') || break
+
     train = trains[id]
     begin
       wagon = train.unhook_wagon
@@ -281,64 +330,87 @@ unhook_wagons = proc {
   end
 }
 
-wagon_contents = proc {
-  trains_with_wagons = trains.select { |t| t.wagons_number > 0 }
-  while id = Menu.get_array_id(trains_with_wagons, 'Выберите поезд')
-    train = trains_with_wagons[id]
-    while id = Menu.get_array_id(train.wagons, 'Выберите вагон')
-      wagon = train.wagons[id]
-      if wagon.class == PassengerWagon
-        Menu.new(
-          { 'Добавить пассажира' =>
-              proc do
-                begin
-                  wagon.take_seat
-                  puts "Пассажир добавлен в #{wagon}"
-                rescue RuntimeError
-                  puts 'Свободных мест нет'
-                end
-              end,
-            'Выгнать пассажира' =>
-              proc do
-                begin
-                  wagon.release_seat
-                  puts "Пассажир выгружен из #{wagon}"
-                rescue RuntimeError
-                  puts 'Все места свободны'
-                end
-              end },
-          'Меню пассажирского вагона'
-        ).get_proc.call
-      elsif wagon.class == CargoWagon
-        Menu.new(
-          { 'Загрузить вагон' =>
-              proc do
-                Menu.head_puts "Введите объём загрузки вагона #{wagon}"
-                print ", #{CargoWagon::VOLUME_UNIT_NAME}:"
-                begin
-                  wagon.load gets.chomp
-                  puts "Груз загружен в #{wagon}"
-                rescue RuntimeError
-                  puts "Груз не вмещается в #{wagon}"
-                end
-              end,
-            'Разгрузить вагон' =>
-              proc do
-                Menu.head_puts "Введите объём выгрузки вагона #{wagon}"
-                print "(ENTER выгрузить весь), #{CargoWagon::VOLUME_UNIT_NAME}:"
-                begin
-                  wagon.unload gets.chomp
-                  puts "Груз выгружен из #{wagon}"
-                rescue RuntimeError
-                  puts "Вагон #{wagon} уже пуст"
-                end
-              end },
-          'Меню грузового вагона'
-        ).get_proc.call
+class PassengerWagon
+  def take_seats_menu_proc
+    proc do
+      begin
+        take_seat
+        puts "Пассажир добавлен в #{self}"
+      rescue RuntimeError
+        puts 'Свободных мест нет'
       end
     end
   end
-}
+
+  def release_seat_menu_proc
+    proc do
+      begin
+        release_seat
+        puts "Пассажир выгружен из #{self}"
+      rescue RuntimeError
+        puts 'Все места свободны'
+      end
+    end
+  end
+
+  def menu_proc
+    Menu.new(
+      { 'Добавить пассажира' => take_seats_menu_proc,
+        'Выгнать пассажира' => release_seat_menu_proc },
+      'Меню пассажирского вагона'
+    ).get_proc
+  end
+end
+
+class CargoWagon
+  def load_menu_proc
+    proc do
+      Menu.head_puts "Введите объём загрузки вагона #{self}"
+      print ", #{CargoWagon::VOLUME_UNIT_NAME}:"
+      begin
+        load gets.chomp
+        puts "Груз загружен в #{self}"
+      rescue RuntimeError
+        puts "Груз не вмещается в #{self}"
+      end
+    end
+  end
+
+  def unload_menu_proc
+    proc do
+      Menu.head_puts "Введите объём выгрузки вагона #{self}"
+      print "(ENTER выгрузить весь), #{CargoWagon::VOLUME_UNIT_NAME}:"
+      begin
+        unload gets.chomp
+        puts "Груз выгружен из #{self}"
+      rescue RuntimeError
+        puts "Вагон #{self} уже пуст"
+      end
+    end
+  end
+
+  def menu_proc
+    Menu.new(
+      { 'Загрузить вагон' => load_menu_proc,
+        'Разгрузить вагон' => unload_menu_proc },
+      'Меню грузового вагона'
+    ).get_proc
+  end
+end
+
+wagon_contents = proc do
+  trains_with_wagons = trains.select { |t| t.wagons_number > 0 }
+  loop do
+    id = Menu.array_id(trains_with_wagons, 'Выберите поезд') || break
+    train = trains_with_wagons[id]
+
+    loop do
+      id = Menu.array_id(train.wagons, 'Выберите вагон') || break
+      wagon = train.wagons[id]
+      wagon.menu_proc.call
+    end
+  end
+end
 
 wagons_menu = Menu.new(
   { 'Прицепить вагоны' => hook_wagons,

@@ -4,8 +4,8 @@ require_relative 'wagon.rb'
 class PassengerWagon < Wagon
   DEFAULT_MAX_SEATS_NUMBER = 40
 
-  attr_reader :free_seats_number, # метод, возвращающий кол-во свободных мест в вагоне.
-              :max_seats_number # общего кол-ва мест (задается при создании вагона)
+  attr_reader :free_seats_number, # кол-во свободных мест в вагоне
+              :max_seats_number # общее кол-во мест
 
   def self.type_name
     'пассажирский'
@@ -17,6 +17,7 @@ class PassengerWagon < Wagon
 
   def initialize(max_seats_number = '')
     super()
+
     max_seats_number = DEFAULT_MAX_SEATS_NUMBER if max_seats_number.to_s.empty?
     @free_seats_number = @max_seats_number = max_seats_number.to_i
     if (!@max_seats_number.is_a? Integer) || (@max_seats_number < 0)

@@ -20,7 +20,9 @@ class Route
   # промежуточные могут добавляться между ними
   def initialize(begin_station, *stations)
     # начало и конец маршрута
-    end_station = stations.pop || raise('нельзя создать маршрут менее чем из двух станций')
+    end_station = stations.pop\
+    || raise('нельзя создать маршрут менее чем из двух станций')
+
     raise 'такая станция уже есть на маршруте' if begin_station == end_station
 
     @stations = [begin_station, end_station]
@@ -52,11 +54,12 @@ class Route
   # TODO что делать если на станции поезда?
   def delete_stations(*stations)
     stations.each do |station|
-      if station == begin_station || station == end_station
+      if [begin_station, end_station].include? station
         raise 'нельзя удалять начальную и конечную станцию маршрута'
       end
 
-      @stations.delete(station) || raise('такой станции не существует на маршруте')
+      @stations.delete(station)\
+      || raise('такой станции не существует на маршруте')
     end
     validate!
     stations
@@ -84,9 +87,9 @@ class Route
     unless stations.all? { |s| s.is_a? Station }
       raise 'в маршрут можно добавить только Station или потомков'
     end
-    if stations.size < 2
-      raise 'маршрут не может состоять менее чем из двух станций'
-    end
+
+    raise 'маршрут не может состоять менее чем из двух станций'\
+      if stations.size < 2
   end
 
   private
