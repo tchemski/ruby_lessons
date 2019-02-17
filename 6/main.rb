@@ -264,7 +264,7 @@ class Wagon
     begin
       # немножко полиморфизма на уровне классов
       wagon_types[id].concrete_menu
-    rescue StandardError
+    rescue RuntimeError
       raise # ещё наверх
     end
   end
@@ -279,7 +279,7 @@ class PassengerWagon
       new(gets.chomp)
     rescue RuntimeError
       puts 'Количество мест не может быть таким'
-    rescue StandardError
+      raise
     end
   end
 end
