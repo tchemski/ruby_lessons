@@ -1,11 +1,11 @@
 require_relative 'auto_array.rb'
 require_relative 'instance_counter.rb'
-require_relative 'validation.rb'
+require_relative 'validations.rb'
 
 class Station
   include AutoArray
   include InstanceCounter
-  include Validation
+  include Validations
 
   NAME_ERROR_MSG =
     'Название станции может состоять из кириллицы белорусского либо русского'\
@@ -16,6 +16,8 @@ class Station
 
   # Имеет название
   attr_reader :name
+
+  validate :name, :format, NAME_REGEXP
 
   # название указывается при ее создании
   def initialize(name)
@@ -66,11 +68,5 @@ class Station
 
   def to_s
     name
-  end
-
-  protected
-
-  def validate!
-    raise NAME_ERROR_MSG if name !~ NAME_REGEXP
   end
 end

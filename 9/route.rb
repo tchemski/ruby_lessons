@@ -5,12 +5,12 @@ require_relative 'cargo_wagon.rb'
 require_relative 'passenger_wagon.rb'
 require_relative 'auto_array.rb'
 require_relative 'instance_counter.rb'
-require_relative 'validation.rb'
+require_relative 'validations.rb'
 
 class Route
   include AutoArray
   include InstanceCounter
-  include Validation
+  include Validations
 
   # Имеет начальную и конечную станцию, а также список промежуточных станций
   # Может выводить список всех станций по-порядку от начальной до конечной

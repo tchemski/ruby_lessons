@@ -1,7 +1,7 @@
 require_relative 'auto_array.rb'
 require_relative 'stamp.rb'
 require_relative 'instance_counter.rb'
-require_relative 'validation.rb'
+require_relative 'validations.rb'
 require_relative 'descendants.rb'
 require 'securerandom'
 
@@ -10,7 +10,7 @@ class Train
   include AutoArray
   include Stamp
   include InstanceCounter
-  include Validation
+  include Validations
 
   ID_ERROR_MSG =
     'Формат номера поезда: три латинские буквы или цифры в любом порядке,'\
@@ -24,6 +24,12 @@ class Train
               :wagons,
               :speed,
               :id # Имеет номер (произвольная строка)
+
+  #validate :station, :type, Station
+  # validate :route, :type, Route
+  #validate :speed, :type, Numeric
+  validate :id, :format, ID_REGEXP
+  validate :id, :presence
 
   def self.type_name
     raise 'переопределить метод в потомках, возвращает строку типа поезда'
@@ -149,15 +155,15 @@ class Train
     validate!
   end
 
-  protected
+  # protected
 
-  def validate!
-    raise ID_ERROR_MSG unless valid_id? id
-    raise 'несоответствие типа вагона' if wagons.any? do |w|
-      !w.is_a?(Wagon) ||
-      !w.class.hookable?(self.class)
-    end
-  end
+  # def validate!
+  #   raise ID_ERROR_MSG unless valid_id? id
+  #   raise 'несоответствие типа вагона' if wagons.any? do |w|
+  #     !w.is_a?(Wagon) ||
+  #     !w.class.hookable?(self.class)
+  #   end
+  # end
 
   private
 
