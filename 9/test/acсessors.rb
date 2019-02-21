@@ -1,7 +1,7 @@
 #!/usr/bin/ruby -w
 
 require_relative '../accessors.rb'
-require_relative '../validations.rb'
+require_relative '../validation.rb'
 require_relative '../station.rb'
 
 class Test
@@ -31,7 +31,7 @@ p t.x
 
 puts '=' * 40
 class TestValidation
-  include Validations
+  include Validation
 
   attr_accessor :name, :answer, :station
   validate :name, :presence
@@ -40,7 +40,7 @@ class TestValidation
 end
 
 class Test2 < TestValidation
-  include Validations
+  include Validation
 
   # attr_accessor :number
 

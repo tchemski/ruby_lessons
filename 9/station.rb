@@ -1,11 +1,11 @@
 require_relative 'auto_array.rb'
 require_relative 'instance_counter.rb'
-require_relative 'validations.rb'
+require_relative 'validation.rb'
 
 class Station
   include AutoArray
   include InstanceCounter
-  include Validations
+  include Validation
 
   NAME_ERROR_MSG =
     'Название станции может состоять из кириллицы белорусского либо русского'\

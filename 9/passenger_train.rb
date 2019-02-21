@@ -6,13 +6,5 @@ class PassengerTrain < Train
     'пассажирский'
   end
 
-  protected
-
-  def validate!
-    if speed > MAX_SPEED
-      raise "Скорость поезда типа #{self.class.type_name} не должна привышать "\
-            "#{MAX_SPEED}"
-    end
-    super
-  end
+  validate :speed, :limits, [0, MAX_SPEED]
 end

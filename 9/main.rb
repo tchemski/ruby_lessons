@@ -2,6 +2,11 @@
 
 require_relative 'route.rb'
 require_relative 'menu.rb'
+require_relative 'train.rb'
+require_relative 'cargo_train.rb'
+require_relative 'passenger_train.rb'
+require_relative 'cargo_wagon.rb'
+require_relative 'passenger_wagon.rb'
 
 stations = Station.all # массив станций AutoArray
 routes = Route.all
@@ -11,8 +16,11 @@ trains = Train.all
 add_station = proc {
   begin
     puts Menu::LINE
-    print 'Введите название станции:'
-    station = Station.new(gets.chomp)
+    print 'Введите название станции (ENTER отменить):'
+    station = gets.chomp
+    next if station.empty?
+
+    station = Station.new(station)
     puts "станция \"#{station}\" добавлена"
   rescue RuntimeError
     puts Station::NAME_ERROR_MSG.to_s
