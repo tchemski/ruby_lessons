@@ -159,8 +159,7 @@ add_train = proc {
 
 delete_train = proc {
   loop do
-    id = Menu.array_id(trains, 'Какой поезд удалить') || next
-
+    id = Menu.array_id(trains, 'Какой поезд удалить') || break
     train = trains.delete_at(id)
     puts "удалён поезд #{train}"
   end
